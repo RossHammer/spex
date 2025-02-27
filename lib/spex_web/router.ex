@@ -12,18 +12,21 @@ defmodule SpexWeb.Router do
 
   pipeline :api do
     plug :accepts, ["json"]
+    plug OpenApiSpex.Plug.PutApiSpec, module: SpexWeb.ApiSpec
   end
 
-  scope "/", SpexWeb do
+  scope "/" do
     pipe_through :browser
 
-    get "/", PageController, :home
+    get "/", SpexWeb.PageController, :home
+    get "/swaggerui", OpenApiSpex.Plug.SwaggerUI, path: "/api/openapi"
   end
 
-  # Other scopes may use custom stacks.
-  # scope "/api", SpexWeb do
-  #   pipe_through :api
-  # end
+  scope "/api" do
+    pipe_through :api
+    resources "/users", SpexWeb.UserController, only: [:update]
+    get "/openapi", OpenApiSpex.Plug.RenderSpec, []
+  end
 
   # Enable LiveDashboard in development
   if Application.compile_env(:spex, :dev_routes) do
